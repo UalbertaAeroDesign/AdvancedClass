@@ -5,7 +5,7 @@ conda activate yolo
 # Install PyTorch (Apple Silicon has MPS acceleration)
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 # Install YOLOv8
-pip install ultralytics
+pip install ultralytics pyserial pymavlink
 python - << 'PY'
 import torch
 print("torch:", torch.__version__)
