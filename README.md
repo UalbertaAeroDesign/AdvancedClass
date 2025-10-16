@@ -12,10 +12,11 @@ After running the command, activate conda's virtual environment with `conda acti
 
 Running the scripts with `python` after this should produce an error that it can't find the serial device `cu.usbserial-DN04T9FH`. 
 
-If you're running macOS (with telemetry Radio or USBC cable plugged in and connected to flight controller) in then execute command `ls /dev/tty.*`, you should get an output similar or the same as `cu.usbserial-DN04T9FH`. 
+### RESOLVE ABOVE ERROR
+**If you're running macOS** (with telemetry Radio or USBC cable plugged in and connected to flight controller) in then execute command `ls /dev/tty.*`, you should get an output similar or the same as `cu.usbserial-DN04T9FH`. 
 Use whatever output you received to replace the first paratmer in any `open_serial("/dev/cu.usbserial-DN04T9FH", 57600)` function calls.
 
-If youre running windows, in powershell execute `Get-WmiObject Win32_SerialPort | Select-Object DeviceID, Name, Description`. 
+**If youre running windows**, in powershell execute `Get-WmiObject Win32_SerialPort | Select-Object DeviceID, Name, Description`. 
 Expect an output similar to:
 DeviceID  Name                 Description
 --------  ----                 -----------
