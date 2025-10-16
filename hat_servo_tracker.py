@@ -4,6 +4,11 @@ import cv2
 import serial
 from pymavlink import mavutil
 
+# ==== TUNABLES ====
+CONF_MIN = 0.60          # only accept detections >= 60% confidence
+TARGET_LABEL = "hat"     # set to None to accept any class
+# ===================
+
 # MAVLink helpers
 def open_serial(port="/dev/cu.usbserial-DN04T9FH", baud=57600):
     try:
@@ -28,7 +33,6 @@ def move_servo(ser, servo_num, pwm, target_sys=1, target_comp=1):
     ser.write(msg.pack(mav)); ser.flush()
     # print(f"Servo {servo_num} -> {pwm}")  # Noisy if left on; uncomment for debugging
 
-
 def main():
     # Serial link to FC (close QGC/Mission Planner if using same port)
     ser = open_serial("/dev/cu.usbserial-DN04T9FH", 57600)
@@ -36,7 +40,15 @@ def main():
         return
 
     # Load YOLO model
-    model = YOLO("/opt/homebrew/runs/detect/train/weights/best.pt")  # Update path if needed, see pt file in repo
+    model = YOLO("/opt/homebrew/runs/detect/train/weights/best.pt")  # Update path if needed
+
+    # Resolve class id for TARGET_LABEL (if provided)
+    TARGET_CLS = None
+    if TARGET_LABEL is not None:
+        names = getattr(getattr(model, "model", model), "names", {})
+        TARGET_CLS = next((i for i, n in names.items() if str(n).lower() == TARGET_LABEL.lower()), None)
+        if TARGET_CLS is None:
+            print(f"[warn] TARGET_LABEL '{TARGET_LABEL}' not found in model.names; accepting any class.")
 
     # Open webcam
     cap = cv2.VideoCapture(0)
@@ -65,25 +77,33 @@ def main():
             if not ok:
                 break
 
-            # Run YOLO
-            results = model(frame, stream=True, verbose = False)
+            # Run YOLO (quiet)
+            results = model(frame, stream=True, verbose=False)
 
-            # Pick the most confident detection (any class)
-            best = None
-            best_conf = -1.0
+            # Pick the most confident detection that passes filters
+            best, best_conf, best_cls = None, -1.0, None
             for r in results:
+                if r.boxes is None:
+                    continue
                 for box in r.boxes:
                     conf = float(box.conf[0])
+                    if conf < CONF_MIN:
+                        continue
+                    cls = int(box.cls[0]) if box.cls is not None else -1
+                    if TARGET_CLS is not None and cls != TARGET_CLS:
+                        continue
                     if conf > best_conf:
-                        best_conf = conf
-                        best = box
+                        best_conf, best, best_cls = conf, box, cls
 
             if best is not None:
                 x1, y1, x2, y2 = map(int, best.xyxy[0])
                 cx, cy = (x1 + x2)//2, (y1 + y2)//2
 
-                # Draw detection
+                # Draw detection (with label+conf)
                 cv2.rectangle(frame, (x1,y1), (x2,y2), (0,255,0), 2)
+                label_txt = f"{TARGET_LABEL or 'obj'} {best_conf:.2f}"
+                cv2.putText(frame, label_txt, (x1, max(20, y1-8)),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 2)
                 cv2.circle(frame, (cx,cy), 4, (0,255,0), -1)
 
                 # Image center
@@ -96,20 +116,16 @@ def main():
                 err_y = cy - center_y   # vertical error   -> elevator (servo 5)
 
                 # Map to PWM with deadband & clamp
-                # Rudder: if target is right (err_x>0) we typically steer right.
-                # If direction feels reversed on your setup, flip the sign.
                 if abs(err_x) < DB_X:
                     pwm_rudder = NEUTRAL
                 else:
-                    pwm_rudder = int(NEUTRAL - err_x * GAIN_X)  # flip sign here if needed
+                    pwm_rudder = int(NEUTRAL - err_x * GAIN_X)  # flip sign if needed
                 pwm_rudder = max(PWM_MIN, min(PWM_MAX, pwm_rudder))
 
-                # Elevator: if target is below (err_y>0), typically pitch down.
-                # Flip sign here if your elevator moves the wrong way.
                 if abs(err_y) < DB_Y:
                     pwm_elev = NEUTRAL
                 else:
-                    pwm_elev = int(NEUTRAL - err_y * GAIN_Y)    # flip sign here if needed
+                    pwm_elev = int(NEUTRAL - err_y * GAIN_Y)    # flip sign if needed
                 pwm_elev = max(PWM_MIN, min(PWM_MAX, pwm_elev))
 
                 # Send only on change
@@ -122,12 +138,11 @@ def main():
                     prev_pwm_elev = pwm_elev
 
             else:
-                # Auto center when no target
+                # Auto center when no acceptable detection
                 if prev_pwm_rudder != NEUTRAL:
                     move_servo(ser, SERVO_RUDDER, NEUTRAL); prev_pwm_rudder = NEUTRAL
                 if prev_pwm_elev != NEUTRAL:
                     move_servo(ser, SERVO_ELEVATOR, NEUTRAL); prev_pwm_elev = NEUTRAL
-                pass
 
             # HUD
             h, w = frame.shape[:2]

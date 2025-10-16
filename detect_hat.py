@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import cv2
 
 # Load the trained model
-model = YOLO("/opt/homebrew/runs/detect/train/weights/best.pt")  # Update path if needed, I included PT file in this repo so you can set it to that
+model = YOLO("best.pt")  # Update path if needed, I included PT file in this repo so you can set it to that
 
 # Open webcam
 cap = cv2.VideoCapture(0)
