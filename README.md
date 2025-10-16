@@ -12,23 +12,54 @@ After running the command, activate conda's virtual environment with `conda acti
 
 Running the scripts with `python` after this should produce an error that it can't find the serial device `cu.usbserial-DN04T9FH`. 
 
-### RESOLVE ABOVE ERROR
-**If you're running macOS** (with telemetry Radio or USBC cable plugged in and connected to flight controller) in then execute command `ls /dev/tty.*`, you should get an output similar or the same as `cu.usbserial-DN04T9FH`. 
-Use whatever output you received to replace the first paratmer in any `open_serial("/dev/cu.usbserial-DN04T9FH", 57600)` function calls.
+## Resolving Serial Port Connection Errors
 
-**If youre running windows**, in powershell execute `Get-WmiObject Win32_SerialPort | Select-Object DeviceID, Name, Description`. 
-Expect an output similar to:
-DeviceID  Name                 Description
---------  ----                 -----------
-COM3      USB-SERIAL CH340     USB-SERIAL CH340
-COM5      PX4 FMU V5           PX4 Autopilot
+### macOS
 
-Replace first parameter in all `open_serial("/dev/cu.usbserial-DN04T9FH", 57600)` function calls with either whichever DeviceID from the output above is assocaited to the telemetry radio. 
+1. Ensure your **telemetry radio** or **flight controller** is plugged in via USB.
+2. Open **Terminal** and run:
+   ```bash
+   ls /dev/tty.*
+   ```
+3. You should see output similar to:
+   ```
+   /dev/cu.usbserial-DN04T9FH
+   ```
+4. Use this result in your Python code:
+   ```python
+   open_serial("/dev/cu.usbserial-DN04T9FH", 57600)
+   ```
+   Replace the first argument with the device path shown on your system.
 
+---
 
+### Windows
 
-At this point the script would work if the transmitted was plugged into the USB port.
+1. Plug in your **telemetry radio** or **flight controller**.
+2. Open **PowerShell** and run:
+   ```powershell
+   Get-WmiObject Win32_SerialPort | Select-Object DeviceID, Name, Description
+   ```
+3. Example output:
+   ```
+   DeviceID  Name                 Description
+   --------  ----                 -----------
+   COM3      USB-SERIAL CH340     USB-SERIAL CH340
+   COM5      PX4 FMU V5           PX4 Autopilot
+   ```
+4. Use the correct `DeviceID` (COM port) for your telemetry radio:
+   ```python
+   open_serial("COM3", 57600)
+   ```
+   Replace `"COM3"` with whichever COM port appears in your system.
 
+---
 
+### At This Point
+Your script should now connect successfully **if the transmitter is plugged into your USB port**.
 
-Note: QGroundControl automatically attaches to the transmitter so you should disconnect or close it before running a script that connects to the device.
+---
+
+### Important Note
+**QGroundControl** automatically connects to the transmitter by default.  
+Before running any Python scripts that use the same serial device, **close or disconnect QGroundControl** to avoid port conflicts.
