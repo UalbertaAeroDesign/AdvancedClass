@@ -1,14 +1,27 @@
+from config import Config
+from exceptions import FailedCameraOpenException, InvalidCameraTypeException
 from ultralytics import YOLO
 import cv2
+
+# Load the config. Check config_template for all attributes of this object.
+config = Config()
 
 # Load the trained model
 model = YOLO("best.pt")  # Update path if needed, I included PT file in this repo so you can set it to that
 
 # Open webcam
-cap = cv2.VideoCapture(0)
-if not cap.isOpened():
-    print("Failed to open camera.")
-    exit()
+if config.camera_type == "webcam":
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        raise FailedCameraOpenException("Failed to open camera.")
+elif config.camera_type == "feed":
+    # ...
+    pass
+elif config.camera_type == "serial":
+    # ...
+    pass
+else:
+    raise InvalidCameraTypeException("Invalid Camera Type, not in [webcam, feed, serial]. Check config")
 
 while True:
     ret, frame = cap.read()
