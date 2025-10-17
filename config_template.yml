@@ -1,5 +1,5 @@
 # Please change the name of this file to
-# `cam_config.yml` and modify it to use it as your camera configuration.
+# `config.yml` and modify it to use it as your camera configuration.
 config: 
   camera_type: webcam # can be `webcam | feed | serial`.
   feed_url: "" # something like `rtsp://192.168.blah.blah`
