@@ -48,7 +48,9 @@
 3) Run the following commands:
    - sudo apt update && sudo apt upgrade -y
    - sudo apt install python3-pip python3-dev python3-setuptools python3-wheel -y
-   - pip install matplotlib --break-system-packages
+   - sudo apt-get install python3-dev python3-opencv python3-wxgtk4.0 python3-pip python3-matplotlib python3-lxml python3-pygame
+   - pip install --break-system-packages "numpy<2"
+   - pip install --break-system-packages --force-reinstall opencv-python
    - pip install pymavlink MAVProxy --break-system-packages
    - echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
    - . ~/.bashrc
