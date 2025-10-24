@@ -5,7 +5,7 @@ import serial
 from pymavlink import mavutil
 
 # MAVLink helpers
-def open_serial(port="CON3", baud=57600):
+def open_serial(port="/dev/cu.usbserial-DN04T9FH", baud=57600):
     try:
         ser = serial.Serial(port, baudrate=baud, timeout=1)
         print(f"Opened serial port {port} @ {baud}")
@@ -31,12 +31,12 @@ def move_servo(ser, servo_num, pwm, target_sys=1, target_comp=1):
 
 def main():
     # Serial link to FC (close QGC/Mission Planner if using same port)
-    ser = open_serial("CON3", 57600)
+    ser = open_serial("/dev/cu.usbserial-DN04T9FH", 57600)
     if not ser:
         return
 
     # Load YOLO model
-    model = YOLO("/Users/syedh/AeroDesign/AdvancedClass/best.pt")  # Update path if needed, see pt file in repo
+    model = YOLO("/opt/homebrew/runs/detect/train/weights/best.pt")  # Update path if needed, see pt file in repo
 
     # Open webcam
     cap = cv2.VideoCapture(0)
