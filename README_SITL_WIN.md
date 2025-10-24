@@ -1,24 +1,7 @@
-# Creating the Virtual Environment:
-1) Create a folder somewhere on your computer to host your SITL virtual environment
-2) Open your terminal/command prompt
-3) cd into the folder you initially created for SITL
-4) Run the following command: python -m venv venv
-   You have now successfuly created your virtual environment. Now to enter it!
-5) Run the following command: venv\Scripts\activate
-   If you are on Windows Powershell, run this: venv\Scripts\Activate.ps1
-   If you are getting an error that indicates "unauthorized access", run these commands in order:
-    - Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-    - venv\Scripts\Activate.ps1
-   If successful, you will see (venv) before your current path
-6) Download the requirements.txt file from the github repo and copy it onto the location of your virtual environment
-7) In your virtual environment location, run the following command: pip install -r requirements.txt
-    As long as there are no errors, you have successfully installed the packages you need.
-
-
-
+# Installing and setting up the ArduPilot repo in WSL
 
 1) Install WSL for windows. It should be as simple as running the following command in powershell and then restarting your computer: wsl --install
-2) Search "ubunut" in the start menu and open the application
+2) Search "ubuntu" in the start menu and open the application
 3) Within the application, run these three commands (Press Y+Enter if asked to continue):
    - sudo apt-get update
    - sudo apt-get install git
@@ -32,20 +15,18 @@
    - . ~/.profile
 7) Exit Ubuntu, go into windows powershell, and type the following command:
    - wsl --shutdown
-8) Repoen Ubuntu, if there's a path in brackets before your actual path, type:
+8) Reopen Ubuntu, if there's a path in brackets before your actual path (indicating a virtual environment), run the following command:
    - deactivate
 
 
-# Starting The SITL simulator:
-
+# Setting up the SITL simulator:
 1) Type the following command:
    - cd ardupilot
-2) Run the following command:
+2) Run the following command to build SITL:
    - ./waf configure --board sitl && ./waf plane
-   - if the output says you need to install a package, run the following command:
+   - if the output says you need to install a specific package, run the following command and then rebuild SITL using the command above:
       - sudo apt install python3-<package_name>
-      - run: ./waf configure --board sitl && ./waf plane
-3) Run the following commands:
+3) Run the following commands in order to correctly install MavProxy and run SITL:
    - sudo apt update && sudo apt upgrade -y
    - sudo apt install python3-pip python3-dev python3-setuptools python3-wheel -y
    - sudo apt-get install python3-dev python3-opencv python3-wxgtk4.0 python3-pip python3-matplotlib python3-lxml python3-pygame
@@ -54,10 +35,30 @@
    - pip install pymavlink MAVProxy --break-system-packages
    - echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
    - . ~/.bashrc
-4) run the following command:
+
+
+# Running the SITL simulator
+1) Within the ardupilot repo, move to the ArduCopter directory by running the following command:
    - cd ArduCopter
-5) run the following command:
+2) run the following command to run SITL:
    - ../Tools/autotest/sim_vehicle.py --map --console
    If you get an error saying "No module named 'future'", run this command and then try the above command again:
       - pip install future --break-system-packages
-   
+
+
+# Creating a bashscript within the ArduPilot repo to start SITL after setup
+1) Go into the Advanced Class repository on github, go into the scripts directory where you will find the "run_sitl_win.sh"
+2) Copy all of the code inside the directory
+3) Within the ardupilot repo on WSL, create and enter into a bash script file using the following command (make sure you are in the root directory of the repo):
+   - vim run_sitl_win.sh
+4) Press i to go into insert mode and edit the script
+5) Paste the code previously copied from the Advanced Class repository
+6) Press Esc to exit out of insert mode
+7) press :wq to save and quit the file
+8) Make the script executable by running the following command:
+   - chmod +x run_sitl_win.sh
+9) Run the file by running the following command from the root directory:
+   - ./run_sitl_win.sh
+
+
+### Note: Setup steps can vary sometimes from machine to machine. If you're running into any troubles while using this documentation, please don't hesitate to reach out to me (Hassan) over Teams and hopefully we can figure it out together :)
