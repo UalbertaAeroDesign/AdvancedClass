@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def detect_white_rectangle(frame):
+def detect_white_square_cv2(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
 
@@ -38,7 +38,9 @@ def detect_white_rectangle(frame):
                     best_rect = approx
                     max_area = area
 
+    conf = 0
     if best_rect is not None:
+        conf = 1
         cv2.polylines(frame, [best_rect], True, (255, 0, 0), 2)
         M = cv2.moments(best_rect)
         if M["m00"] != 0:
@@ -48,7 +50,7 @@ def detect_white_rectangle(frame):
             cv2.putText(frame, f"({cx},{cy})", (cx - 40, cy - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 0, 200), 1)
 
-    return frame
+    return conf, frame
 
 
 def main():
@@ -62,8 +64,8 @@ def main():
         if not ret:
             break
 
-        processed = detect_white_rectangle(frame)
-        cv2.imshow("White Rectangle Detection", processed)
+        conf, processed = detect_white_square_cv2(frame)
+        #cv2.imshow("White Rectangle Detection", processed)
 
         key = cv2.waitKey(10)
         if key == 27:  # ESC
