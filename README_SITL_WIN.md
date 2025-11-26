@@ -48,16 +48,26 @@
 
 # Creating a bashscript within the ArduPilot repo to start SITL after setup
 1) Go into the Advanced Class repository on github, go into the scripts directory where you will find the "run_sitl_win.sh"
-2) Copy all of the code inside the directory
+2) Copy all of the code inside the directory  (NEW CHANGES TO CODE)
 3) Within the ardupilot repo on WSL, create and enter into a bash script file using the following command (make sure you are in the root directory of the repo):
-   - vim run_sitl_win.sh
+   - vim run_sitl_win.sh          
 4) Press i to go into insert mode and edit the script
 5) Paste the code previously copied from the Advanced Class repository
 6) Press Esc to exit out of insert mode
 7) press :wq to save and quit the file
-8) Make the script executable by running the following command:
+8) run the following command:     (NEW)
+   - cd Tools/autotest          
+9) run this command:              (NEW)
+   - vim locations.txt
+10)press i to edit file then paste this line at the bottom:  (NEW)
+    - UofA=53.523219,-113.526319,0,90
+11) press esc then type ':wq' to save and exit the file      (NEW)
+12) now put in the two commands to get back to the root directory:   (NEW)
+    - cd
+    - cd ardupilot
+14) Make the script executable by running the following command:
    - chmod +x run_sitl_win.sh
-9) Run the file by running the following command from the root directory:
+11) Run the file by running the following command from the root directory:
    - ./run_sitl_win.sh
 
 
