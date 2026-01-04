@@ -1,7 +1,9 @@
 import os
 import cv2
 import numpy as np
-
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib import rcParams
 from detect_white_square import detect_white_square_cv2
 from detect_WhiteBox import detect_white_square_yolo
 
@@ -11,23 +13,106 @@ images_without_white_square = '../Example_Images/Without_Square'
 #assume these take one argument; a cv2 frame and return confidence score as well as an annotated image
 function_to_test = [detect_white_square_cv2, detect_white_square_yolo]
 
-image_limit = 2
-
-def add_noise(img, amount):
-    mean = 0
-    stddev = amount
-    noise = np.zeros(img.shape, np.uint8)
-    cv2.randn(noise, mean, stddev)
-
-    return cv2.add(img, noise)
-
+# test_functions will test all functions with all combinations of one function from each sublist 
+# functions must take and return an image
 permutations = [
+#    [lambda img: img],
     [lambda img: img, lambda img: cv2.flip(img, 0), lambda img: cv2.flip(img, 1)],
-    [lambda img: img, lambda img: add_noise(img, 180)],
+    [lambda img: img, lambda img: add_noise(img, 10), lambda img: add_noise(img, 40)],
+    [lambda img: img, lambda img: add_brightness(img, 30), lambda img: add_brightness(img, 60)]
 ]
 
+image_limit = -1
 
-def get_frames_from_img(image_path):
+confidence_threshold = 0.3
+
+def plot_results(results_df):
+    methods = []
+    images = []
+    for row in results_df:
+        methods += [row]
+
+    methods = methods[3:]
+    results_by_image = {}
+
+    for row in results_df.iterrows():   
+        if row[1]['Image Name'] not in images:
+            images += [row[1]['Image Name']]
+    
+    for method in methods:
+        results_by_image[method] = {'TP':[0] * len(images), 'FP':[0] * len(images), 'TN':[0] * len(images), 'FN':[0] * len(images), 'correct':[0] * len(images), 'incorrect':[0] * len(images)}
+    
+    for row in results_df.iterrows():
+        for m in methods:
+            if float(row[1]['Ground Truth']) > confidence_threshold:
+                if float(row[1][m]) > confidence_threshold:
+                    #True positive
+                    results_by_image[m]['TP'][images.index(row[1]['Image Name'])] += 1
+                    results_by_image[m]['correct'][images.index(row[1]['Image Name'])] += 1
+                else:
+                    #false negative
+                    results_by_image[m]['FN'][images.index(row[1]['Image Name'])] += 1
+                    results_by_image[m]['incorrect'][images.index(row[1]['Image Name'])] += 1
+            else:
+                if float(row[1][m]) > confidence_threshold:
+                    #False positive
+                    results_by_image[m]['FP'][images.index(row[1]['Image Name'])] += 1
+                    results_by_image[m]['incorrect'][images.index(row[1]['Image Name'])] += 1
+                else:
+                    #True negative
+                    results_by_image[m]['TN'][images.index(row[1]['Image Name'])] += 1
+                    results_by_image[m]['correct'][images.index(row[1]['Image Name'])] += 1
+
+    barWidth = 0.25
+    fig = plt.subplots(figsize =(12, 8),tight_layout=True) 
+
+    bars = []
+
+    bars += [np.arange(len(images))]
+
+    for i in range(len(methods[1:])):
+        bars += [[x + barWidth for x in bars[i -1]]]
+
+    # rgba
+    correct_colors = [(0,1.0,0,1),
+                      (0,0.6,0,1),
+                      (0,0.2,0,1)
+                      ]
+    incorrect_colors = [(1.0,0,0,1),
+                        (0.6,0,0,1),
+                        (0.2,0,0,1)
+                        ]
+    
+    for i, m in enumerate(methods):
+        plt.bar(bars[i], results_by_image[m]['correct'], color = correct_colors[i % len(correct_colors)], width = barWidth, 
+                edgecolor ='grey', label =m) 
+        plt.bar(bars[i], results_by_image[m]['incorrect'], color = incorrect_colors[i % len(incorrect_colors)], width = barWidth, 
+                edgecolor ='grey', label =m, bottom=results_by_image[m]['correct']) 
+
+    plt.xlabel('Image', fontweight ='bold', fontsize = 15) 
+    plt.xticks([r + barWidth for r in range(len(images))], images, rotation='vertical')
+
+    plt.legend()
+    plt.show()
+
+def add_noise(img, stddev):
+    mean = 0
+    noise = cv2.randn(np.zeros(img.shape[:2], np.int32), mean, stddev)
+    noise = cv2.merge([noise] * 3)
+    #cv2.imshow(str(stddev), noise)
+
+    img = img.astype(np.int32)
+    noisy = cv2.add(img, noise)
+    noisy = cv2.normalize(noisy, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
+    noisy = noisy.astype(np.uint8)
+    return noisy
+
+def add_brightness(img, amount):
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    hsv[:,:,2] = cv2.add(hsv[:,:,2], amount)
+    return(cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR))
+
+def get_frame_from_img(image_path):
     width = 512 
     img = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
@@ -45,14 +130,14 @@ def test_functions(image_limit):
         if image_limit == 0:
             break
 
-        images += [{'is_square' : 1, 'name': os.path.basename(image_path), 'frames' : get_frames_from_img(image_path)}]
+        images += [{'is_square' : 1, 'name': os.path.basename(image_path), 'original_frame' : get_frame_from_img(image_path), 'frames' : []}]
         image_limit -=1
 
     for image_path in ['/'.join((images_without_white_square, i)) for i in os.listdir(images_without_white_square)]:
         if image_limit == 0:
             break
 
-        images += [{'is_square' : 0, 'name': os.path.basename(image_path), 'frames' : get_frames_from_img(image_path)}]
+        images += [{'is_square' : 0, 'name': os.path.basename(image_path), 'original_frame' : get_frame_from_img(image_path), 'frames' : []}]
         image_limit -=1
     
 
@@ -60,13 +145,12 @@ def test_functions(image_limit):
         index_list = [0] * len(permutations)
         all_perms_done = False
         while not all_perms_done:
-            working_frame = image['frames'][0].copy()
+            working_frame = image['original_frame'][0].copy()
             for i, idx in enumerate(index_list):
                 working_frame = permutations[i][idx](working_frame)
             
             #save to list of frames
             image['frames'] += [working_frame]
-            #cv2.imshow('', working_frame)
 
             #increment index list
             for i, idx in enumerate(index_list):
@@ -80,23 +164,30 @@ def test_functions(image_limit):
                     index_list[i] = idx
                     break
         
+    
+    labels = ['Image Name', 'Image Version', 'Ground Truth']
 
-    print("Image name | Image Version | Ground Truth | ", end = '')
     for func in function_to_test:
-        print('%s |' % func.__name__, end = '')
-    print()
-
+        labels += [func.__name__]
+    
+    results = []
     for image in images:
         for i, frame in enumerate(image['frames']):
-            results = []
+            frame_results = []
             for func in function_to_test:
-                conf, frame = func(frame)
-                results += [str(round(conf, 2))]
+                conf, frame_out = func(frame.copy()) # copy just in case the function is not well behaved
+                frame_results += [str(round(conf, 2))]
+                #cv2.imshow(func.__name__ + image['name'] + '_frame=' + str(i), frame_out)
 
-                cv2.imshow(func.__name__ + image['name'] + '_frame=' + str(i), frame)
+            frame_results = [image['name'], str(i), str(image['is_square'])] + frame_results
+            results += [frame_results]
+        print("Test " + image['name'])
 
-            print('%s | %d | %.2f | %s |' % (image['name'], i, image['is_square'], ' | '.join(results)))        
+    results_df = pd.DataFrame(results, columns=labels)
+
+    print(results_df.to_markdown())
     
+    plot_results(results_df)
     cv2.waitKey(0)        
     cv2.destroyAllWindows()
 
