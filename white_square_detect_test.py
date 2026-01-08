@@ -4,25 +4,27 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
-from detect_white_square import detect_white_square_cv2
+from detect_white_square import detect_white_square_cv2, detect_white_square_cv2_improved
 from detect_WhiteBox import detect_white_square_yolo
 
 images_with_white_square = '../Example_Images/With_Square'
 images_without_white_square = '../Example_Images/Without_Square'
 
 #assume these take one argument; a cv2 frame and return confidence score as well as an annotated image
-function_to_test = [detect_white_square_cv2, detect_white_square_yolo]
+function_to_test = [detect_white_square_cv2, detect_white_square_cv2_improved, detect_white_square_yolo]
 
 # test_functions will test all functions with all combinations of one function from each sublist 
 # functions must take and return an image
 permutations = [
 #    [lambda img: img],
-    [lambda img: img, lambda img: cv2.flip(img, 0), lambda img: cv2.flip(img, 1)],
-    [lambda img: img, lambda img: add_noise(img, 10), lambda img: add_noise(img, 40)],
-    [lambda img: img, lambda img: add_brightness(img, 30), lambda img: add_brightness(img, 60)]
+#    [lambda img: img, lambda img: cv2.flip(img, 0), lambda img: cv2.flip(img, 1)],
+#    [lambda img: img, lambda img: add_noise(img, 10), lambda img: add_noise(img, 40)],
+    [lambda img: img, lambda img: add_brightness(img, 30), lambda img: add_brightness(img, 60), lambda img: add_brightness(img, -30)]
 ]
+# -1 for no limit
+image_limit = 5
 
-image_limit = -1
+show_incorrect_images = False
 
 confidence_threshold = 0.3
 
@@ -42,29 +44,36 @@ def plot_results(results_df):
     for method in methods:
         results_by_image[method] = {'TP':[0] * len(images), 'FP':[0] * len(images), 'TN':[0] * len(images), 'FN':[0] * len(images), 'correct':[0] * len(images), 'incorrect':[0] * len(images)}
     
+    overall_accuracy = {'correct' : [0] * len(methods), 'incorrect' : [0] * len(methods)}
+
     for row in results_df.iterrows():
-        for m in methods:
+        for i, m in enumerate(methods):
             if float(row[1]['Ground Truth']) > confidence_threshold:
                 if float(row[1][m]) > confidence_threshold:
                     #True positive
                     results_by_image[m]['TP'][images.index(row[1]['Image Name'])] += 1
                     results_by_image[m]['correct'][images.index(row[1]['Image Name'])] += 1
+                    overall_accuracy['correct'][i] += 1
                 else:
                     #false negative
                     results_by_image[m]['FN'][images.index(row[1]['Image Name'])] += 1
                     results_by_image[m]['incorrect'][images.index(row[1]['Image Name'])] += 1
+                    overall_accuracy['incorrect'][i] += 1
+
             else:
                 if float(row[1][m]) > confidence_threshold:
                     #False positive
                     results_by_image[m]['FP'][images.index(row[1]['Image Name'])] += 1
                     results_by_image[m]['incorrect'][images.index(row[1]['Image Name'])] += 1
+                    overall_accuracy['incorrect'][i] += 1
                 else:
                     #True negative
                     results_by_image[m]['TN'][images.index(row[1]['Image Name'])] += 1
                     results_by_image[m]['correct'][images.index(row[1]['Image Name'])] += 1
+                    overall_accuracy['correct'][i] += 1
 
     barWidth = 0.25
-    fig = plt.subplots(figsize =(12, 8),tight_layout=True) 
+    fig  = plt.subplots(figsize =(12, 8),tight_layout=True) 
 
     bars = []
 
@@ -93,6 +102,17 @@ def plot_results(results_df):
     plt.xticks([r + barWidth for r in range(len(images))], images, rotation='vertical')
 
     plt.legend()
+    plt.show()
+
+    fig = plt.subplots(figsize =(12, 8),tight_layout=True)
+
+    for i, m in enumerate(methods):
+        plt.bar(methods, overall_accuracy['correct'], color = correct_colors[i % len(correct_colors)], width = barWidth, 
+                edgecolor ='grey', label =m) 
+        plt.bar(methods, overall_accuracy['incorrect'], color = incorrect_colors[i % len(incorrect_colors)], width = barWidth, 
+                edgecolor ='grey', label =m, bottom=overall_accuracy['correct']) 
+    
+    #plt.legend()
     plt.show()
 
 def add_noise(img, stddev):
@@ -177,7 +197,9 @@ def test_functions(image_limit):
             for func in function_to_test:
                 conf, frame_out = func(frame.copy()) # copy just in case the function is not well behaved
                 frame_results += [str(round(conf, 2))]
-                #cv2.imshow(func.__name__ + image['name'] + '_frame=' + str(i), frame_out)
+                if ((conf < confidence_threshold and image['is_square']) or \
+                    (conf > confidence_threshold and not image['is_square'])) and show_incorrect_images:
+                    cv2.imshow(func.__name__ + image['name'] + '_frame=' + str(i), frame_out)
 
             frame_results = [image['name'], str(i), str(image['is_square'])] + frame_results
             results += [frame_results]
