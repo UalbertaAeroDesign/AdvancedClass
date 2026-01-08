@@ -52,6 +52,9 @@ def detect_white_square_cv2(frame):
 
     return conf, frame
 
+def detect_white_square_cv2_improved(frame):
+    frame = cv2.blur(frame, (3,3)) # the best blurring to use really depends on the camera
+    return detect_white_square_cv2(frame)
 
 def main():
     cap = cv2.VideoCapture(0)
