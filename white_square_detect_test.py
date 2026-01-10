@@ -80,7 +80,7 @@ def plot_results(results_df):
     bars += [np.arange(len(images))]
 
     for i in range(len(methods[1:])):
-        bars += [[x + barWidth for x in bars[i -1]]]
+        bars += [[x + barWidth for x in bars[i]]]
 
     # rgba
     correct_colors = [(0,1.0,0,1),
