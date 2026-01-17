@@ -155,4 +155,15 @@ For the down facing cameras POV, run:
 
     python ./view_http_mjpeg.py 
 
-this script is in this repo.
+this script is in this repo. 
+
+
+
+In terminal running mavproxy:
+run:
+
+    mode guided
+    arm throttle
+    takeoff 5
+
+This should show you 
