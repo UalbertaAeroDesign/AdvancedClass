@@ -166,4 +166,4 @@ run:
     arm throttle
     takeoff 5
 
-This should show you 
+The gazebo iris quadcopter should take off to 5m and hover
