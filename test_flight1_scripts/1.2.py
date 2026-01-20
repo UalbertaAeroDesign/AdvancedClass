@@ -44,7 +44,8 @@ takeoff_altitude = -2
 while True:
   msg = the_connection.recv_match(type="LOCAL_POSITION_NED", blocking=True)
   print(msg)
-
+ # NOTE had small issue with gazebo not exceeding this altitude and gettting stuck hovering
+ # over the takeoff zone. May need to lower threshold. 
   if msg.z <= takeoff_altitude:
      break
 
