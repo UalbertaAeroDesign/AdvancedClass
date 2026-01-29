@@ -1,3 +1,4 @@
+# This is now irrelevant (precision_land_full runs a ffmpeg pipe, thus no need for udp viewer)
 import cv2
 
 pipeline = (
