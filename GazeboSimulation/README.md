@@ -166,4 +166,26 @@ run:
     arm throttle
     takeoff 5
 
+
 The gazebo iris quadcopter should take off to 5m and hover
+
+
+
+
+### MISC:
+
+virtual enviroment:
+
+    python3 -m venv .venv
+    source .venv/bin/activate
+
+
+deps:
+
+    pip install opencv-python numpy pupil-apriltags pymavlink
+
+
+gimble camera enable:
+
+    gz topic -t "/world/iris_runway/model/iris_with_gimbal/link/down_cam_link/sensor/down_cam/image/enable_streaming" \
+     -m gz.msgs.Boolean -p "data: 1"
