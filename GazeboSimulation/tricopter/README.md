@@ -1,7 +1,7 @@
 # SETUP TRICOPTER TO RUN PRECISION LAND SCRIPT SIM IN GAZEBO
 
 ## STEP 1:
-First, you need to make sure you have the appropriate Gazebo model folder "minihawk_vtol". IF you go to the githib, youll see a did a monolith push of the entire gz_ws repository into our organization. Ours is also called gz_ws. You can clone this and make it your functioning gazebo direcotry, or you can clone it somewhere else and just grab the necessary files and folders. I recommend the first option, however since all my changes ive made span across numerous files. 
+First, you need to make sure you have the appropriate Gazebo model folder "minihawk_vtol". IF you go to the github, youll see I did a monolith push of the entire gz_ws repository into our organization. Ours is also called gz_ws. You can clone this and make it your functioning gazebo direcotry, or you can clone it somewhere else and just grab the necessary files and folders. I recommend the first option, however since all my changes ive made span across numerous files. 
 
 ## STEP 2:
 If your gazebo is the exact same as the one in our github, then you should have all the appropraite models and worlds to run the simulation. 
@@ -56,6 +56,8 @@ This terminal runs the actual code, so i usually have this as a vscode terminal.
 First, enable downcam streaming by running:
 
     gz topic -t /world/runway/model/minihawk_vtol/link/down_cam_link/sensor/down_cam/image/enable_streaming -m gz.msgs.Boolean -p "data: 1"
+    
+NOTE: Every time you restart the gazebo terminal, you need to rerun the above command.
 
 then in the same terminal, run
 
