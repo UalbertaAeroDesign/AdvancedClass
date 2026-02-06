@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import cv2
 
 # Load your trained model
-model = YOLO(r"./detection_models/box_best.pt")
+model = YOLO(r"../detection_models/box_best.pt")
 
 def detect_white_square_yolo(frame):
     # Run YOLO model on the current frame

@@ -133,37 +133,20 @@ def vertex_amount_test(checked_contour):
     return False
 #-------------------------------------------------------------------------------
 
-path = "white_square_videos"
-video_name = "IMG_4227.MOV"
-full_path = os.path.join(path, video_name)
+"""
+Largely copied from the __main__ part, intended for checking single images. messy, should really be refactored before prod. use 
+"""
+def detect_white_square_cv2_version_2(img):
+    #grabbed these three lines from a stack overflow post(not sure if ranges need to be tweaked)
+    sensitivity = 20
+    lower_hsv = np.array([0,0,255 - sensitivity])
+    upper_hsv = np.array([255,255 - sensitivity,255])
 
-video = cv2.VideoCapture(full_path)
+    min_pixel_area = 300 # could cause problems if really far away maybe?
+    existing_valid_contours = []
+    streak_min = 20
 
-if not video.isOpened():
-    print("Error: Could not open video.")
-    exit()
-
-
-cv2.namedWindow('webcam', cv2.WINDOW_NORMAL)
-cv2.namedWindow('mask', cv2.WINDOW_NORMAL)
-
-cv2.resizeWindow('webcam', 600, 800)
-cv2.resizeWindow('mask', 600, 800)
-# ---------------------------
-
-#grabbed these three lines from a stack overflow post(not sure if ranges need to be tweaked)
-sensitivity = 20
-lower_hsv = np.array([0,0,255 - sensitivity])
-upper_hsv = np.array([255,255 - sensitivity,255])
-
-min_pixel_area = 300 # could cause problems if really far away maybe?
-id_counter = 0
-existing_valid_contours = []
-streak_min = 20
-
-
-while True:
-    ret, img = video.read()
+    conf = 0
 
     for contour in existing_valid_contours:
         contour.reset_status()
@@ -179,32 +162,93 @@ while True:
                 x, y, w, h = cv2.boundingRect(contour) 
                 
                 if vertex_amount_test(contour):
-
                     if Whiteness_check(contour, mask):
-                        if found_match(existing_valid_contours, x, w, y, h) != True:
-                            valid_contour = Tracked_contours(id_counter, x, w, y, h)
-                            existing_valid_contours.append(valid_contour)
-                            id_counter += 1
-
-    
-    existing_valid_contours = [obj for obj in existing_valid_contours if obj.missing_frames < 10]
+                        valid_contour = Tracked_contours(0, x, w, y, h)
+                        existing_valid_contours.append(valid_contour)
+                        conf = 1
 
     for contour in existing_valid_contours:
         contour.reset_status() #important line
-        streak = contour.get_streak()
-        id = contour.get_id()
         x, w, y, h = contour.get_rect()
-        if streak > streak_min:
-            cv2.rectangle(img, (x, y), (x + w,y + h), (0,0,255), 3)
-            cv2.putText(img, f"streak:{streak}_ID:{id}", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+        cv2.rectangle(img, (x, y), (x + w,y + h), (0,0,255), 3)
+        cv2.putText(img, f"square!", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
 
-    
-    cv2.imshow('mask', mask)
-    cv2.imshow('webcam', img)
-    
 
-    if cv2.waitKey(30) & 0xFF == 27:
-        break
+    return (conf, img)
 
-video.release()
-cv2.destroyAllWindows()
+if __name__ == "__main__":
+    path = "white_square_videos"
+    video_name = "IMG_4227.MOV"
+    full_path = os.path.join(path, video_name)
+
+    video = cv2.VideoCapture(full_path)
+
+    if not video.isOpened():
+        print("Error: Could not open video.")
+        exit()
+
+
+    cv2.namedWindow('webcam', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('mask', cv2.WINDOW_NORMAL)
+
+    cv2.resizeWindow('webcam', 600, 800)
+    cv2.resizeWindow('mask', 600, 800)
+    # ---------------------------
+
+    #grabbed these three lines from a stack overflow post(not sure if ranges need to be tweaked)
+    sensitivity = 20
+    lower_hsv = np.array([0,0,255 - sensitivity])
+    upper_hsv = np.array([255,255 - sensitivity,255])
+
+    min_pixel_area = 300 # could cause problems if really far away maybe?
+    id_counter = 0
+    existing_valid_contours = []
+    streak_min = 20
+
+
+    while True:
+        ret, img = video.read()
+
+        for contour in existing_valid_contours:
+            contour.reset_status()
+
+        image = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(image, lower_hsv, upper_hsv)
+
+        contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        if len(contours) != 0:
+            for contour in contours:
+                if cv2.contourArea(contour) > min_pixel_area:
+                    x, y, w, h = cv2.boundingRect(contour) 
+                    
+                    if vertex_amount_test(contour):
+
+                        if Whiteness_check(contour, mask):
+                            if found_match(existing_valid_contours, x, w, y, h) != True:
+                                valid_contour = Tracked_contours(id_counter, x, w, y, h)
+                                existing_valid_contours.append(valid_contour)
+                                id_counter += 1
+
+        
+        existing_valid_contours = [obj for obj in existing_valid_contours if obj.missing_frames < 10]
+
+        for contour in existing_valid_contours:
+            contour.reset_status() #important line
+            streak = contour.get_streak()
+            id = contour.get_id()
+            x, w, y, h = contour.get_rect()
+            if streak > streak_min:
+                cv2.rectangle(img, (x, y), (x + w,y + h), (0,0,255), 3)
+                cv2.putText(img, f"streak:{streak}_ID:{id}", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+
+        
+        cv2.imshow('mask', mask)
+        cv2.imshow('webcam', img)
+        
+
+        if cv2.waitKey(30) & 0xFF == 27:
+            break
+
+    video.release()
+    cv2.destroyAllWindows()

@@ -6,23 +6,24 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams
 from detect_white_square import detect_white_square_cv2, detect_white_square_cv2_improved
 from detect_WhiteBox import detect_white_square_yolo
+from detect_WhiteSquare import detect_white_square_cv2_version_2
 
 images_with_white_square = '../Example_Images/With_Square'
 images_without_white_square = '../Example_Images/Without_Square'
 
 #assume these take one argument; a cv2 frame and return confidence score as well as an annotated image
-function_to_test = [detect_white_square_cv2, detect_white_square_cv2_improved, detect_white_square_yolo]
+function_to_test = [detect_white_square_cv2, detect_white_square_cv2_version_2, detect_white_square_cv2_improved, detect_white_square_yolo]
 
 # test_functions will test all functions with all combinations of one function from each sublist 
 # functions must take and return an image
 permutations = [
 #    [lambda img: img],
-#    [lambda img: img, lambda img: cv2.flip(img, 0), lambda img: cv2.flip(img, 1)],
-#    [lambda img: img, lambda img: add_noise(img, 10), lambda img: add_noise(img, 40)],
+    [lambda img: img, lambda img: cv2.flip(img, 0), lambda img: cv2.flip(img, 1)],
+    [lambda img: img, lambda img: add_noise(img, 10), lambda img: add_noise(img, 40)],
     [lambda img: img, lambda img: add_brightness(img, 30), lambda img: add_brightness(img, 60), lambda img: add_brightness(img, -30)]
 ]
 # -1 for no limit
-image_limit = 5
+image_limit = -1
 
 show_incorrect_images = False
 
@@ -135,6 +136,9 @@ def add_brightness(img, amount):
 def get_frame_from_img(image_path):
     width = 512 
     img = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    if not hasattr(img, 'shape'):
+        print("WARNING: Unable to load %s" %image_path)
+        return None
 
     #rescale to 'width' while preserving aspect ratio
     scale = width / img.shape[1]
@@ -144,22 +148,21 @@ def get_frame_from_img(image_path):
 
     return [resized]
 
-def test_functions(image_limit):
+def get_images_from_folder(folder_path, limit):
     images = []
-    for image_path in ['/'.join((images_with_white_square, i)) for i in os.listdir(images_with_white_square)]:
-        if image_limit == 0:
+    for image_path in ['/'.join((folder_path, i)) for i in os.listdir(folder_path)]:
+        if limit == 0:
             break
+        
+        img = {'is_square' : 1, 'name': os.path.basename(image_path), 'original_frame' : get_frame_from_img(image_path), 'frames' : []}
+        if img['original_frame']:
+            images += [img]
+            limit -=1
+    return images
 
-        images += [{'is_square' : 1, 'name': os.path.basename(image_path), 'original_frame' : get_frame_from_img(image_path), 'frames' : []}]
-        image_limit -=1
-
-    for image_path in ['/'.join((images_without_white_square, i)) for i in os.listdir(images_without_white_square)]:
-        if image_limit == 0:
-            break
-
-        images += [{'is_square' : 0, 'name': os.path.basename(image_path), 'original_frame' : get_frame_from_img(image_path), 'frames' : []}]
-        image_limit -=1
-    
+def test_functions(image_limit):
+    images  = get_images_from_folder(images_with_white_square, image_limit)
+    images += get_images_from_folder(images_without_white_square, image_limit)
 
     for image in images:
         index_list = [0] * len(permutations)
