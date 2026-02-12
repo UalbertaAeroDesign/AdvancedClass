@@ -1,0 +1,28 @@
+{
+  "version": "5.10.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "square",
+      "points": [
+        [
+          190.6153846153846,
+          119.14529914529913
+        ],
+        [
+          281.2136752136752,
+          212.30769230769232
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "rectangle",
+      "flags": {},
+      "mask": null
+    }
+  ],
+  "imagePath": "..\\All\\trimmed__DSC0456.JPG",
+  "imageData": null,
+  "imageHeight": 340,
+  "imageWidth": 512
+}

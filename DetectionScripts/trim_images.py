@@ -3,11 +3,11 @@ import cv2
 import numpy as np
 import pandas as pd
 
-#input_images = '../Example_Images/With_Square'
-#output_image_folder = '../Trimmed_Images/With_Square'
+input_images = '../Example_Images/With_Square'
+output_image_folder = 'yolo_images/Trimmed_Images/With_Square'
 
-input_images = '../Example_Images/Without_Square'
-output_image_folder = '../Trimmed_Images/Without_Square'
+#input_images = '../Example_Images/Without_Square'
+#output_image_folder = 'yolo_images/Trimmed_Images/Without_Square'
 
 def trim_img(image_path):
     width = 512 

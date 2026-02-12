@@ -1,0 +1,28 @@
+{
+  "version": "5.10.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "square",
+      "points": [
+        [
+          47.26213592233006,
+          368.495145631068
+        ],
+        [
+          300.6601941747573,
+          576.26213592233
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "rectangle",
+      "flags": {},
+      "mask": null
+    }
+  ],
+  "imagePath": "..\\All\\trimmed__DSC0761.JPG",
+  "imageData": null,
+  "imageHeight": 770,
+  "imageWidth": 512
+}

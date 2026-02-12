@@ -1,0 +1,28 @@
+{
+  "version": "5.10.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "square",
+      "points": [
+        [
+          156.42735042735043,
+          171.7094017094017
+        ],
+        [
+          290.6153846153846,
+          296.9230769230769
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "rectangle",
+      "flags": {},
+      "mask": null
+    }
+  ],
+  "imagePath": "..\\All\\trimmed__DSC0600.JPG",
+  "imageData": null,
+  "imageHeight": 340,
+  "imageWidth": 512
+}

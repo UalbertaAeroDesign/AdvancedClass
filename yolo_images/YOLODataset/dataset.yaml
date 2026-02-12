@@ -1,0 +1,7 @@
+path: \\?\F:\School\School U\Clubs\AdvancedClass\yolo_images\YOLODataset
+train: images/train
+val: images/val
+test:
+
+names:
+    0: square

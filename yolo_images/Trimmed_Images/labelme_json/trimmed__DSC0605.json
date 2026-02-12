@@ -1,0 +1,28 @@
+{
+  "version": "5.10.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "square",
+      "points": [
+        [
+          179.5042735042735,
+          90.5128205128205
+        ],
+        [
+          389.3333333333333,
+          301.1965811965812
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "rectangle",
+      "flags": {},
+      "mask": null
+    }
+  ],
+  "imagePath": "..\\All\\trimmed__DSC0605.JPG",
+  "imageData": null,
+  "imageHeight": 340,
+  "imageWidth": 512
+}

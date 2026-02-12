@@ -1,0 +1,28 @@
+{
+  "version": "5.10.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "square",
+      "points": [
+        [
+          136.76923076923077,
+          133.24786324786325
+        ],
+        [
+          302.15384615384613,
+          291.36752136752136
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "rectangle",
+      "flags": {},
+      "mask": null
+    }
+  ],
+  "imagePath": "..\\All\\trimmed__DSC0722.JPG",
+  "imageData": null,
+  "imageHeight": 340,
+  "imageWidth": 512
+}
