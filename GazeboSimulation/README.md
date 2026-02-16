@@ -149,13 +149,13 @@ then, run:
   -f mjpeg -q:v 5 -r 30 \
   -listen 1 http://127.0.0.1:8090/feed.mjpg
 
-
+<!-- 
 ## TERMINAL 4:
 For the down facing cameras POV, run:
 
     python ./view_http_mjpeg.py 
 
-this script is in this repo. 
+this script is in this repo.  -->
 
 
 
@@ -189,3 +189,7 @@ gimble camera enable:
 
     gz topic -t "/world/iris_runway/model/iris_with_gimbal/link/down_cam_link/sensor/down_cam/image/enable_streaming" \
      -m gz.msgs.Boolean -p "data: 1"
+
+
+mavproxy two endpoints:
+      mavproxy.py --master=/dev/tty.usbserial-DN04T9FH --baudrate 57600  --out=udp:127.0.0.1:14550 --out=udp:127.0.0.1:14551
