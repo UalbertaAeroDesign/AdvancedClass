@@ -8,7 +8,7 @@ If your gazebo is the exact same as the one in our github, then you should have 
 
 
 ### Terminal 1 (GAZEBO SERVER):
-navigate to your gazebo directory (gz_ws) and run
+navigate to your gazebo directory (gz_ws/src/ardupilot_gazebo) and run
 
     gz sim -s -v4 -r worlds/minihawk_runway.sdf
 
@@ -18,7 +18,7 @@ navigate to your gazebo directory (gz_ws) and run
     gz sim -g -v4
 
 ### TERMINAL 3 (ArduPilot SITL):
-in your ardupilot directory, run
+in your ARDUPLANE (not ardupilot) directory, run
 
     sim_vehicle.py -v ArduPlane -f JSON --out=127.0.0.1:14550 --out=127.0.0.1:14551
 
