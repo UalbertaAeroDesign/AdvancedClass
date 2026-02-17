@@ -25,7 +25,7 @@ in your ardupilot directory  directory, run
 CRUCIAL: Load the parameters for the minihawk vtol plane. These are in ~/gz_ws/src/ardupilot_gazebo/config
 in the ardupilot terminal, once drone has connected (verify in either QGC or MissionPlanner) run 
 
-    param load ~/gz_ws/src/ardupilot_gazebo/config/minihawk_vtol.param
+    param load ~/gz_ws/src/ardupilot_gazebo/config/minihawk_vtol.param (replace with your actual path)
 
 and then restart ardupilot SITL for changes to take effect.
 Your exact path may be a bit different (though it probably shouldnt be). 
