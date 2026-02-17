@@ -18,7 +18,7 @@ navigate to your gazebo directory (gz_ws) and run
     gz sim -g -v4
 
 ### TERMINAL 3 (ArduPilot SITL):
-in your ARDUPLANE (not ardupilot) directory, run
+in your ardupilot directory  directory, run
 
     sim_vehicle.py -v ArduPlane -f JSON --out=127.0.0.1:14550 --out=127.0.0.1:14551
 
