@@ -1,3 +1,9 @@
+# DISCLAIMER: In order for this script to work, you MUST have the plane_precland.lua script inside your ardupilot scripts directory!
+# To do this, follow these steps:
+# 1. In ardupilot root directory, do a git pull to make sure your version is current. 
+# 2. Navigate to libraries/AP_Scripting/applets/plane_precland.lua from ardupilot root dir to confirm the existence of plane_precland.lua.
+# 3. Run "cp libraries/AP_Scripting/applets/plane_precland.lua scripts/" from inside ardupilots root directory. This will copy plane_precland.lua from libraries/AP_Scripting/applets into scripts.
+
 import time, math, subprocess
 import numpy as np
 import cv2
