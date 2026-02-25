@@ -66,21 +66,18 @@ Before running any Python scripts that use the same serial device, **close or di
 
 
 # Run SITL with docker:
-docker run -it --rm orthuk/ardupilot-sitl bash -lc '
-mkdir -p ~/.config/ardupilot
-# name=lat,lon,alt(m MSL),heading(deg)
-printf "UofA=53.523219,-113.526319,676,0\n" > ~/.config/ardupilot/locations.txt
-./Tools/autotest/sim_vehicle.py -v ArduCopter -L UofA \
-  --out=udp:host.docker.internal:14550
-'
+run:
+
+      docker run -it orthuk/ardupilot-sitl bash -lc '
+      mkdir -p ~/.config/ardupilot
+      printf "UofA=53.523219,-113.526319,676,0\n" > ~/.config/ardupilot/locations.txt
+      ./Tools/autotest/sim_vehicle.py -v ArduCopter -L UofA \
+      --out=udp:host.docker.internal:14550 \
+      --out=udp:host.docker.internal:14551
+      '
 
 
 
-docker run -it --rm orthuk/ardupilot-sitl bash -lc '
-mkdir -p ~/.config/ardupilot
-printf "UofA=53.523219,-113.526319,676,0\n" > ~/.config/ardupilot/locations.txt
-./Tools/autotest/sim_vehicle.py -v ArduCopter -L UofA \
---out=udp:host.docker.internal:14550 \
---out=udp:host.docker.internal:14551
+
 
 

@@ -30,7 +30,7 @@ def main():
         for det in detections:
             # Pose results:
             # det.pose_t is translation (x,y,z) in meters in camera frame
-            # det.pose_R is a 3x3 rotation matrix, not used but we could if we want roll/pitch/yaw translation
+            # det.pose_R is a 3x3 rotation matrix, not used but we could if we want roll/pitch/yaw
             t = det.pose_t  # numpy array shape (3,1) or (3,)
             z_m = float(t[2])
             x_m = float(t[0])
