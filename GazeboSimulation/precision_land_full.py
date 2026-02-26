@@ -24,6 +24,9 @@ CENTER_HOLD_SEC = 2.0           # Must be centered this long before landing (til
 
 SHOW_VIDEO = True # If you want the downwards camera feed
 
+YAW_KP = 5.0          # P-gain: PWM offset per degree of yaw error (e.g. 24deg * 5 = +120 PWM)
+YAW_DEADBAND_DEG = 3.0  # Ignore yaw errors smaller than this
+
 # Precision Loiter enable (Aux function 39)
 # IMPORTANT: pick a channel that is NOT already assigned to another Aux function,
 # otherwise you can get "Duplicate Aux Switch Options" and arming failures.
@@ -32,7 +35,7 @@ SHOW_VIDEO = True # If you want the downwards camera feed
 # Channel 1-4 usually are for Roll, Pitch, Throttle, Yaw, and ch5 and aboive are for switches.
 # We will use channel 7 as our virtual switch to control precision loiter feature. 
 # When entering centering phase, we send an rc_channels_override command on channel 7 with a value of 2000 (ON)
-# which will activate precision loiter (which is mapped to option 39 if you see the code below)
+# which will activate precision loiter (channel 7 should be mapped to option 39 if you check the param list in QGC/MissionPlanner)
 PRECLOITER_CH = 7
 PWM_ON  = 2000
 PWM_OFF = 1000
@@ -121,12 +124,13 @@ def send_rc_hold(m, roll=1500, pitch=1500, throttle=1500, yaw=1500, aux_ch=PRECL
     chans[aux_ch-1] = int(aux_pwm)  # Chosen aux channel (I chose 7)
     m.mav.rc_channels_override_send(m.target_system, m.target_component, *chans)
 
-def maintain_rc_hold(m, now, enable_precloiter=True):
+def maintain_rc_hold(m, now, enable_precloiter=True, yaw=1500):
     global _last_rc
     if now - _last_rc >= 1.0 / RC_HOLD_HZ: # Make sure we send AT MOST 10 commands a second so we dont overwhelm the link
         send_rc_hold(
             m,
             throttle=1500,
+            yaw=yaw,  # 0 = passthrough (don't override ch4), 1500 = neutral
             aux_pwm=(PWM_ON if enable_precloiter else PWM_OFF)
         )
         _last_rc = now
@@ -156,6 +160,23 @@ def landing_target_send(m, ax, ay):
         (0.0, 0.0, 0.0, 1.0),
         2, # # Type: MAV_LANDING_TARGET_TYPE_VISION_FIDUCIAL aka AprilTag
         0
+    )
+
+def send_condition_yaw(m, yaw_angle_deg, speed_deg_s=10, is_relative=True):
+    """
+    Commands the drone to change its yaw.
+    is_relative=True means 'rotate this many degrees from current heading'
+    """
+    m.mav.command_long_send(
+        m.target_system,
+        m.target_component,
+        mavutil.mavlink.MAV_CMD_CONDITION_YAW,
+        0,                  # confirmation
+        abs(yaw_angle_deg), # param 1: target angle (must be absolute value for this command)
+        speed_deg_s,        # param 2: angular speed in deg/s
+        1 if yaw_angle_deg > 0 else -1, # param 3: direction (-1 CCW, 1 CW)
+        1 if is_relative else 0,        # param 4: 1 for relative, 0 for absolute
+        0, 0, 0             # param 5-7 not used
     )
 
 # ----------------------------
@@ -249,7 +270,8 @@ def main():
     centered_since = None
     send_dt = 1.0 / SEND_RATE_HZ
     last_send = 0.0
-    last_print = 0.0  # FIX: ensure defined
+    last_print = 0.0
+    yaw_pwm = 1500  # Neutral until we see the tag
 
     phase = "PREC_LOITER"
     print("Phase: Precision Loiter centering...")
@@ -257,9 +279,9 @@ def main():
     while True:
         now = time.time()
 
-        # CRITICAL: keep RC3 + aux held while in LOITER precision centering
-        if phase == "PREC_LOITER":
-            maintain_rc_hold(m, now, enable_precloiter=True)
+        # CRITICAL: keep RC3 + aux held while centering or aligning
+        if phase in ("PREC_LOITER", "YAW_ALIGN"):
+            maintain_rc_hold(m, now, enable_precloiter=True, yaw=yaw_pwm)
 
         if not is_armed(m):
             print("Disarmed. Done.")
@@ -275,7 +297,7 @@ def main():
         frame = np.frombuffer(raw, np.uint8).reshape((H, W, 3)).copy()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        tags = det.detect(gray)
+        tags = det.detect(gray, estimate_tag_pose=True, camera_params=[fx, fy, cx, cy], tag_size=0.40)
         best = None
         if tags:
             best = max(tags, key=lambda t: t.decision_margin)
@@ -287,29 +309,46 @@ def main():
             ax = math.atan((u - cx) / fx)
             ay = math.atan((v - cy) / fy)
 
-            # APPLY FILTER: New value = (weight * current) + (remaining * previous)
+            R = best.pose_R 
+            yaw_error_rad = math.atan2(R[1][0], R[0][0])
+            yaw_error_deg = math.degrees(yaw_error_rad)
+
+            # APPLY FILTER
             filt_ax = (alpha * ax) + (1.0 - alpha) * filt_ax
             filt_ay = (alpha * ay) + (1.0 - alpha) * filt_ay
 
-            # Send the filtered values at fixed rate
+            # 1. SPAM THIS: Send the X/Y precision landing targets at high frequency
             if now - last_send >= send_dt:
-                landing_target_send(m, filt_ax, filt_ay)
+                landing_target_send(m, filt_ax, filt_ay) 
                 last_send = now
 
-            # # send at fixed rate
-            # if now - last_send >= send_dt:
-            #     landing_target_send(m, ax, ay)
-            #     last_send = now
+            # 2. Proportional yaw correction via RC ch4 — only active in YAW_ALIGN phase
+            if phase == "YAW_ALIGN" and abs(yaw_error_deg) > YAW_DEADBAND_DEG:
+                yaw_pwm = int(max(1300, min(1700, 1500 + YAW_KP * yaw_error_deg)))
+            else:
+                yaw_pwm = 1500
 
-            # centering logic during loiter phase
+            # Phase transitions
             if phase == "PREC_LOITER":
-                # if abs(ax) < CENTER_AX_OK and abs(ay) < CENTER_AY_OK:
+                # Step 1: center XY only
                 if abs(filt_ax) < CENTER_AX_OK and abs(filt_ay) < CENTER_AY_OK:
                     if centered_since is None:
                         centered_since = now
                     elif now - centered_since >= CENTER_HOLD_SEC:
-                        print("Centered -> switching to LAND")
-                        stop_rc_overrides(m)          # NEW: release overrides + precloiter OFF
+                        print("Centered -> aligning yaw...")
+                        phase = "YAW_ALIGN"
+                        centered_since = None
+                else:
+                    centered_since = None
+
+            elif phase == "YAW_ALIGN":
+                # Step 2: rotate to align yaw
+                if abs(yaw_error_deg) < YAW_DEADBAND_DEG:
+                    if centered_since is None:
+                        centered_since = now
+                    elif now - centered_since >= CENTER_HOLD_SEC:
+                        print("Yaw aligned -> switching to LAND")
+                        stop_rc_overrides(m)
                         set_mode(m, "LAND")
                         phase = "LAND"
                         centered_since = None
@@ -324,6 +363,7 @@ def main():
                             (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
         else:
             centered_since = None
+            yaw_pwm = 1500  # No tag — stop any yaw correction
 
         if SHOW_VIDEO:
             cv2.putText(frame, f"phase: {phase}", (20, 30),
@@ -336,7 +376,7 @@ def main():
         # Optional: light debug
         if now - last_print > 1.0:
             if best:
-                print(f"phase={phase} dm={best.decision_margin:.1f}")
+                print(f"phase={phase} dm={best.decision_margin:.1f} yaw_err={yaw_error_deg:+.1f}deg")
             else:
                 print(f"phase={phase} dm=None")
             last_print = now
