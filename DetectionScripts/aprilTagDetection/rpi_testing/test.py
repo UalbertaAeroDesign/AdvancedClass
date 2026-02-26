@@ -5,7 +5,7 @@ Sends bytes and checks if they come back. Confirms RPi UART is working.
 import serial
 import time
 
-PORT     = "/dev/serial0"
+PORT     = "/dev/ttyAMA0"
 BAUD     = 57600
 MESSAGE  = b"AeroDesign UART loopback test 1234"
 
