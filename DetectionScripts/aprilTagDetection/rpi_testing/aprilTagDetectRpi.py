@@ -8,8 +8,8 @@ from pymavlink import mavutil
 # ==============================================================================
 # CONFIG
 # ==============================================================================
-SERIAL_PORT  = "/dev/serial0" 
-BAUD_RATE    = 57600
+SERIAL_PORT  = "/dev/ttyAMA0"
+BAUD_RATE    = 921600
 
 W, H         = 640, 480
 HFOV_DEG     = 66.0      # RPi Camera Module 3 standard (approximate)
