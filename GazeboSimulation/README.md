@@ -113,65 +113,6 @@ if you see the quadcopter on the Gazebo GUI take off to ~3m and hover, then ever
 
 
 
-
-
-
-# ADVANCED GAZEBO SIM:
-Once Gazebo is all set up, we can begin to actually do some meaninful simulation. Below is an example of a good simulation, but note that many steps are omitted due to the unque set up and issues I had. There is virtually no chance that if you have only completed the steps above that this will work for you. However, with some AI assistance and this setup guide as a reference for the AI, anyone should be able to get this working in ~1-3 hours.
-
-## TERMINAL 1 (SERVER):
-run: 
-
-    cd ~/gz_ws/src/ardupilot_gazebo
-    gz sim -s -v4 -r gimbal.sdf
-
-
-## TERMINAL 2 (GUI):
-run:
-
-     gz sim -g -v4
-
-
-## TERMINAL 3 (CAMERA STREAMING): 
-Wait around 1 minute before running:
-
-    gz topic -t /world/gimbal/model/mount/model/gimbal/link/pitch_link/sensor/camera/image/enable_streaming \
-  -m gz.msgs.Boolean -p "data: 1"
-
-this will enable streaming. Then, pitch gimble down so that camera is down facing:
-
-    gz topic -t /gimbal/cmd_pitch -m gz.msgs.Double -p "data: 1.5708"
-
-then, run:
-
-    ffmpeg -protocol_whitelist file,udp,rtp \
-  -i gazebo5600.sdp \
-  -f mjpeg -q:v 5 -r 30 \
-  -listen 1 http://127.0.0.1:8090/feed.mjpg
-
-<!-- 
-## TERMINAL 4:
-For the down facing cameras POV, run:
-
-    python ./view_http_mjpeg.py 
-
-this script is in this repo.  -->
-
-
-
-In terminal running mavproxy:
-run:
-
-    mode guided
-    arm throttle
-    takeoff 5
-
-
-The gazebo iris quadcopter should take off to 5m and hover
-
-
-
-
 ### MISC:
 
 virtual enviroment:
