@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from pymavlink import mavutil
 
-PORT = "/dev/cu.usbserial-DN04T9FH"   # <-- change this to your cu.* port
+PORT = "/dev/cu.usbserial-DN04T9FH"
 
 for baud in [115200, 57600, 921600]:
     print(f"Trying {PORT} @ {baud} ...")

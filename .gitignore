@@ -1,2 +1,18 @@
 config.yml
-/__pycache__
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# macOS
+.DS_Store
+
+# MAVProxy / ArduPilot runtime output
+*.tlog
+*.tlog.raw
+*.parm
+output.txt
+
+# ArduPilot source clone (large external repo — clone separately)
+ardupilot/
