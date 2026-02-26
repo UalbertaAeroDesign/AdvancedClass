@@ -14,13 +14,15 @@ from pupil_apriltags import Detector
 CONNECTION_STRING = "udp:127.0.0.1:14551"
 SDP_FILE = "gazebo5601.sdp"
 
-TARGET_ALTITUDE = 7.0
+TARGET_ALTITUDE = 3.0
 HOLD_DURATION = 120
 RC_HOLD_HZ = 10
 
 W, H = 1280, 720
+# W, H = 640, 480
 SEND_RATE_HZ = 20
 HFOV_DEG = 60.0
+DEADBAND_DEG = 1  # try 0.3–1.0 deg
 
 # Throttle tuning (important for QLOITER altitude hold behavior)
 QCLIMB_THROTTLE = 1700     # used to climb
@@ -33,16 +35,46 @@ CAM_CX, CAM_CY = W / 2.0, H / 2.0
 FX = (W / 2.0) / math.tan(math.radians(HFOV_DEG) / 2.0)
 FY = FX
 
+
+
+
+
+# FFMPEG_COMMAND = [
+#     "ffmpeg", "-loglevel", "quiet",
+#     "-protocol_whitelist", "file,udp,rtp",
+#     "-i", SDP_FILE,
+#     "-f", "image2pipe", "-pix_fmt", "bgr24",
+#     "-vcodec", "rawvideo", "-"
+# ]
+
+
 FFMPEG_COMMAND = [
-    "ffmpeg", "-loglevel", "quiet",
+    "ffmpeg", 
+    "-hide_banner", "-loglevel", "error",
     "-protocol_whitelist", "file,udp,rtp",
+    "-fflags", "nobuffer",           # DO NOT buffer the stream
+    "-flags", "low_delay",           # Force low delay
+    "-strict", "experimental",
     "-i", SDP_FILE,
-    "-f", "image2pipe", "-pix_fmt", "bgr24",
-    "-vcodec", "rawvideo", "-"
+    "-f", "image2pipe", 
+    "-pix_fmt", "bgr24",
+    "-vcodec", "rawvideo", 
+    "-an", "-"                       # -an disables audio processing
 ]
+
+
 
 at_detector = Detector(families="tag36h11", nthreads=2, quad_decimate=2.0)
 
+def apply_deadband(angle_rad):
+    if abs(math.degrees(angle_rad)) < DEADBAND_DEG:
+        return 0.0
+    return angle_rad
+
+def clamp_angle(limit, val):
+    if val < 0:
+        return max(-limit, val)
+    return min(limit, val)
 def clamp(v, lo, hi):
     return max(lo, min(hi, v))
 
@@ -79,22 +111,22 @@ def connect_drone():
     set_param(master, "PLND_TYPE", 1)     # MAVLink LANDING_TARGET
     set_param(master, "PLND_STRICT", 0)
     set_param(master, "PLND_ACC_P_NSE", 0.8)
-    set_param(master, "Q_LOIT_SPEED_MS", 0.5)
-    set_param(master, "Q_LOIT_ACC_MAX_M", 1)
-    set_param(master, "Q_LOIT_ACC_MAX_M", 1)
+    # set_param(master, "Q_LOIT_SPEED_MS", 0.5)
+    # set_param(master, "Q_LOIT_ACC_MAX_M", 1)
+    # set_param(master, "Q_LOIT_ACC_MAX_M", 1)
 
-    set_param(master, "Q_P_NE_POS_P", 0.5)
-    set_param(master, "Q_P_JERK_NE", 1)
-    # 1. Soften the position logic - Doesnt seem to make much a difference
-    set_param(master, "Q_P_POS_XY_P", 0.5)   # Lower: Drone won't rush to the center
-    set_param(master, "Q_V_VEL_XY_P", 0.3)   # Lower: Softens the braking/acceleration
-    set_param(master, "Q_V_VEL_XY_I", 0.05)  # Very low: Prevents "pendulum" wind-up
+    # set_param(master, "Q_P_NE_POS_P", 0.5)
+    # set_param(master, "Q_P_JERK_NE", 1)
+    # # 1. Soften the position logic - Doesnt seem to make much a difference
+    # set_param(master, "Q_P_POS_XY_P", 0.5)   # Lower: Drone won't rush to the center
+    # set_param(master, "Q_V_VEL_XY_P", 0.3)   # Lower: Softens the braking/acceleration
+    # set_param(master, "Q_V_VEL_XY_I", 0.05)  # Very low: Prevents "pendulum" wind-up
 
-    # Limit the physical energy
-    set_param(master, "Q_LOIT_ACC_MAX", 100) # Max 1m/s^2 acceleration
-    set_param(master, "Q_LOIT_BRK_JERK", 250)# Slow down the snappiness when stopping
-    # Precision Landing Gain
-    set_param(master, "PLND_GAIN", 0.5)
+    # # Limit the physical energy
+    # set_param(master, "Q_LOIT_ACC_MAX", 100) # Max 1m/s^2 acceleration
+    # set_param(master, "Q_LOIT_BRK_JERK", 250)# Slow down the snappiness when stopping
+    # # Precision Landing Gain
+    # set_param(master, "PLND_GAIN", 0.5)
     return master
 
 def set_mode(master, mode):
@@ -236,9 +268,14 @@ def main():
 
                     ax = math.atan((u - CAM_CX) / FX)
                     ay = math.atan((v - CAM_CY) / FY)
+                    print(f"ax before clamp: {ax}")
 
-                    filt_ax = (alpha * ax) + (1.0 - alpha) * filt_ax
-                    filt_ay = (alpha * ay) + (1.0 - alpha) * filt_ay
+                    ax = clamp_angle(0.03, ax)
+                    print(f"ax after clamp: {ax}")
+                    ay = clamp_angle(0.1, ay)
+
+                    filt_ax = apply_deadband((alpha * ax) + (1.0 - alpha) * filt_ax)
+                    filt_ay = apply_deadband((alpha * ay) + (1.0 - alpha) * filt_ay)
                     
                     if now - last_send >= send_dt:
                         dist = get_height_agl_m(drone) 
