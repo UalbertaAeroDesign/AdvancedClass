@@ -77,8 +77,8 @@ def main():
         while True:
             now = time.time()
 
-            frame = picam2.capture_array()          # RGB
-            gray  = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+            frame = picam2.capture_array()          # BGR (despite "RGB888" label)
+            gray  = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
             tags = det.detect(gray, estimate_tag_pose=True,
                               camera_params=[fx, fy, cx, cy], tag_size=TAG_SIZE_M)
@@ -95,18 +95,16 @@ def main():
                     print(f"LANDING_TARGET sent — ax={math.degrees(ax):+.2f}° "
                           f"ay={math.degrees(ay):+.2f}°  dm={best.decision_margin:.1f}")
 
-                # Draw overlay
-                bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-                cv2.polylines(bgr, [best.corners.astype(int)], True, (0, 255, 0), 2)
-                cv2.circle(bgr, (int(u), int(v)), 5, (0, 255, 0), -1)
-                cv2.putText(bgr, f"ID:{best.tag_id}  ax={math.degrees(ax):+.1f} ay={math.degrees(ay):+.1f}",
+                # Draw overlay (frame is already BGR)
+                cv2.polylines(frame, [best.corners.astype(int)], True, (0, 255, 0), 2)
+                cv2.circle(frame, (int(u), int(v)), 5, (0, 255, 0), -1)
+                cv2.putText(frame, f"ID:{best.tag_id}  ax={math.degrees(ax):+.1f} ay={math.degrees(ay):+.1f}",
                             (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 0), 2)
-                cv2.imshow("AeroDesign AprilTag Detection", bgr)
+                cv2.imshow("AeroDesign AprilTag Detection", frame)
             else:
-                bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-                cv2.putText(bgr, "NO TAG", (10, 30),
+                cv2.putText(frame, "NO TAG", (10, 30),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-                cv2.imshow("AeroDesign AprilTag Detection", bgr)
+                cv2.imshow("AeroDesign AprilTag Detection", frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break

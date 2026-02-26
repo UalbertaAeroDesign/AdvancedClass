@@ -45,7 +45,7 @@ from pymavlink import mavutil
 # CONFIGURATION — edit these before each flight
 # ==============================================================================
 
-SERIAL_PORT  = "/dev/serial0"
+SERIAL_PORT  = "/dev/ttyAMA0"
 BAUD_RATE    = 921600
 
 # Set True to wait for the pilot to get airborne manually.
@@ -247,8 +247,8 @@ def start_camera():
 
 def grab_frame(cam):
     """Capture a frame and return it as a BGR numpy array."""
-    frame = cam.capture_array()            # picamera2 gives RGB
-    return cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+    frame = cam.capture_array()            # BGR despite "RGB888" label on RPi 5
+    return frame
 
 
 # ==============================================================================
