@@ -5,6 +5,7 @@ from pupil_apriltags import Detector
 from picamera2 import Picamera2
 from pymavlink import mavutil
 
+
 # ==============================================================================
 # CONFIG
 # ==============================================================================
