@@ -5,6 +5,9 @@ On your laptop or phone, connect to:
 - **Network:** `AeroDesign-RPi`
 - **Password:** `aeroclub1234`
 
+This will allow you to SSH into it so you can start the code without a monitor.
+Note that for code changes, we will need wifi to pull from git so youll need a monitor for that.
+
 The RPi broadcasts this network automatically on boot. No router or phone hotspot needed.
 
 ## Step 2 — SSH into the RPi (optional)
@@ -12,6 +15,7 @@ If you need a terminal on the RPi:
 ```bash
 ssh aerodesign@10.42.0.1
 ```
+
 
 ## Step 3 — View the live camera stream
 While a precision landing script is running, open a browser and go to:
