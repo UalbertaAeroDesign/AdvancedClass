@@ -5,7 +5,7 @@ import time
 PORT = 14551
 the_connection = mavutil.mavlink_connection(f'udpin:0.0.0.0:{PORT}')
 
-
+    
 # picked up from uofa_mission.py
 def set_mode(name):
     mode_id = the_connection.mode_mapping()[name]
@@ -67,5 +67,5 @@ while True:
   
   if msg.z >= 0:
      break
-  
+
 print("Aircraft has landed")
