@@ -71,3 +71,10 @@ youd like.
 ### MISC
 Configure correct tricopter settings: read https://ardupilot.org/plane/docs/guide-tilt-rotor.html
 
+
+U of A start point for SITL: 
+ sim_vehicle.py -v ArduPlane -f JSON --console --map \
+    -l 53.523219,-113.526319,676,0 \
+    --out=udp:127.0.0.1:14550 --out=udp:127.0.0.1:14551
+
+
