@@ -79,5 +79,14 @@ run:
 
 
 
+# MISC
+
+Ardupilot AP_BUILD_ROOT error fix:
+
+./waf distclean
+./waf configure --board sitl
+./waf -v plane | head -n 80   # confirm include paths/flags now include AP_Version
+./waf plane
+
 
 
