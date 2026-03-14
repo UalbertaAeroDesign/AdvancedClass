@@ -24,7 +24,7 @@ BAUD_RATE     = 921600
 TARGET_ALT_M  = 1.5    # metres to climb to
 HOVER_SEC     = 5.0    # seconds to hold before landing
 
-THROTTLE_CLIMB   = 1620   # PWM to climb in ALT_HOLD
+THROTTLE_CLIMB   = 1550   # PWM to climb in ALT_HOLD
 THROTTLE_HOVER   = 1500   # PWM to hold altitude
 CLIMB_TIMEOUT    = 25.0   # seconds before giving up on climb
 RC_RATE_HZ       = 10.0   # RC override send rate while climbing
