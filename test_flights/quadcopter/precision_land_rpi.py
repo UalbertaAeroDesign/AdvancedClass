@@ -258,12 +258,12 @@ def grab_frame(cam):
 def main():
     m = connect()
 
-    print("Writing PLND params...")
-    set_param(m, "PLND_ENABLED",  1)
-    set_param(m, "PLND_TYPE",     1)
-    set_param(m, "PLND_EST_TYPE", 1)
-    set_param(m, "PLND_STRICT",   0)
-    set_param(m, "FS_GCS_ENABLE", 0)
+    # print("Writing PLND params...")
+    # set_param(m, "PLND_ENABLED",  1)
+    # set_param(m, "PLND_TYPE",     1)
+    # set_param(m, "PLND_EST_TYPE", 1)
+    # set_param(m, "PLND_STRICT",   0)
+    # set_param(m, "FS_GCS_ENABLE", 0)
 
     print("Starting camera...")
     cam = start_camera()
