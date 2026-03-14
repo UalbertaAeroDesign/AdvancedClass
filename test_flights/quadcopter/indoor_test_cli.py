@@ -20,7 +20,7 @@ from pymavlink import mavutil
 SERIAL_PORT    = "/dev/ttyAMA0"
 BAUD_RATE      = 921600
 
-THROTTLE_CLIMB   = 1620   # PWM to climb in ALT_HOLD
+THROTTLE_CLIMB   = 1570   # PWM to climb in ALT_HOLD
 THROTTLE_HOVER   = 1500   # PWM to hold altitude
 THROTTLE_DESCEND = 1380   # PWM for gentle manual descent
 
