@@ -159,7 +159,7 @@ def main():
     cam = Picamera2()
     cam.configure(cam.create_video_configuration(
         main={"format": "RGB888", "size": (W, H)},
-        controls={"FrameRate": 30, "ExposureTime": 8000}
+        controls={"FrameRate": 30, "ExposureTime": 4000}
     ))
     cam.start()
     time.sleep(1.0)  # Let auto-exposure settle
