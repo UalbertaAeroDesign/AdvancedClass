@@ -32,8 +32,8 @@ On any machine that can reach the FC (e.g. via MAVProxy or direct serial):
   Option A — MAVProxy (recommended):
     mavproxy.py --master=/dev/ttyAMA0 --baudrate=921600
     Then in the MAVProxy console:
-      module load messagerate
-      set streamrate -1
+    #   module load messagerate
+    #   set streamrate -1
       message LANDING_TARGET
 
   Option B — pymavlink one-liner (run on the Pi):
@@ -49,7 +49,7 @@ On any machine that can reach the FC (e.g. via MAVProxy or direct serial):
 
   Option C — MAVProxy over UDP (if FC is forwarding telemetry):
     mavproxy.py --master=udp:0.0.0.0:14550
-    Then use the same 'message LANDING_TARGET' command above.
+    Then use the same 'message LANDING_TARGETd' command above.
 ------------------------------------------------------------
 """
 
@@ -159,7 +159,7 @@ def main():
     cam = Picamera2()
     cam.configure(cam.create_video_configuration(
         main={"format": "RGB888", "size": (W, H)},
-        controls={"FrameRate": 30}
+        controls={"FrameRate": 30, "ExposureTime": 8000}
     ))
     cam.start()
     time.sleep(1.0)  # Let auto-exposure settle
