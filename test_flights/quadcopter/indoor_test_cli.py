@@ -50,7 +50,7 @@ def _monitor_loop(m):
     Updates state dict and auto-releases RC overrides on STABILIZE detection.
     """
     while not _monitor_stop.is_set():
-        msg = m.recv_match(blocking=True, timeout=0.1)
+        msg = m.recv_match(blocking=True, timeout=0.1) # blocking (for 0.1 seconds) so we wait till a message arrives. 
         if msg is None:
             continue
         t = msg.get_type()
@@ -85,7 +85,10 @@ def _monitor_loop(m):
             text = msg.text if isinstance(msg.text, str) else msg.text.decode()
             _statustext_buf.append(text.strip())
 
+        # Throw out any other messages
 
+
+        
 def drain(m, max_msgs=30):
     """Background thread owns MAVLink reading; drain() just yields briefly."""
     time.sleep(0.05)
@@ -112,7 +115,7 @@ def send_rc(m, roll=1500, pitch=1500, throttle=1500, yaw=1500):
     m.mav.rc_channels_override_send(m.target_system, m.target_component, *chans)
 
 def release_rc(m):
-    m.mav.rc_channels_override_send(m.target_system, m.target_component, *([0] * 18))
+    m.mav.rc_channels_override_send(m.target_system, m.target_component, *([0] * 18)) # setting a channel to 0 will give full control back to the radio controller (supposedly)
     print("  RC overrides released.")
 
 def set_mode(m, mode_str):
