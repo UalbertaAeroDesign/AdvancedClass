@@ -83,6 +83,7 @@ run:
 
 Ardupilot AP_BUILD_ROOT error fix:
 
+export CXXFLAGS="-DAP_BUILD_ROOT=\\\"$(pwd)\\\""
 ./waf distclean
 ./waf configure --board sitl
 ./waf -v plane | head -n 80   # confirm include paths/flags now include AP_Version
