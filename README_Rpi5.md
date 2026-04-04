@@ -50,6 +50,34 @@ sudo apt install python3-opencv
 sudo nmcli con add type wifi con-name "UWS" ssid "UWS"
 pip3 install pymavlink mavproxy --break-system-packages
 
+# Setting Up VS Code Development with the Pi
+
+1. In VS Code, install the extension **SFTP** by Natizyskunk
+2. Create an empty directory on your PC
+3. Open that folder in VS Code
+4. Press `Ctrl + Shift + P`, type `SFTP: Config`, hit Enter
+5. It should open a new config file — paste this in:
+
+```json
+{
+    "name": "AeroDesign Pi",
+    "host": "10.42.0.1",
+    "protocol": "sftp",
+    "port": 22,
+    "username": "aerodesign",
+    "password": "aeroclub1234",
+    "remotePath": "/home/aerodesign/",
+    "uploadOnSave": true
+}
+```
+
+6. Save the config, then `Ctrl + Shift + P` → **SFTP: Download Project** to pull the Pi's files
+7. Now when you save files locally, they will automatically upload to the Pi
+8. Ask Marcus for Help
+
+In the future, all you'll have to do is connect to the Pi's Wi-Fi, open the previously configured directory in VS Code, and edit the files there. The changes will be uploaded to the Pi automatically.
+
+
 ## Closing remarks
 
 Everything is set up now but if have any questions about the process just shoot me a message on teams (Cameron Rozendaal)
