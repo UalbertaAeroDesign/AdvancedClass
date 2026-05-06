@@ -16,3 +16,17 @@ output.txt
 
 # ArduPilot source clone (large external repo — clone separately)
 ardupilot/
+
+# ArduPilot source (clone separately — see scripts/ardupilot_sitl_setup.sh)
+ardupilot/
+
+# Build artifacts
+*.pyc
+__pycache__/
+*.egg-info/
+.DS_Store
+
+# Python virtual environments
+.venv/
+venv/
+env/

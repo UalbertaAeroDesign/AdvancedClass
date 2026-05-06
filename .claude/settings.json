@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:ardupilot.org)",
+      "WebFetch(domain:discuss.ardupilot.org)",
+      "WebFetch(domain:github.com)",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/ArduPilot/ardupilot/master/libraries/GCS_MAVLink/GCS_Common.cpp\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/ArduPilot/ardupilot/master/libraries/RC_Channel/RC_Channel.cpp\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/ArduPilot/ardupilot/master/libraries/RC_Channel/RC_Channels.cpp\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/ArduPilot/ardupilot/master/libraries/RC_Channel/RC_Channel.h\")"
+    ]
+  }
+}
