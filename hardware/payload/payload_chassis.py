@@ -146,6 +146,7 @@ def run(context):
             for sign in (-1, 1):
                 add_circle(sk, sign * CABLE_HOLE_Y_OFFSET, CABLE_HOLE_Z, CABLE_HOLE_DIA)
             ei = ext.createInput(all_profiles(sk), FOP.CutFeatureOperation)
+            ei.participantBodies = [body_holder['body']]
             ei.setDistanceExtent(False, vi(WALL + 1))
             ext.add(ei)
 
@@ -160,6 +161,7 @@ def run(context):
             for (x, y) in rpi_pos:
                 add_circle(sk, x, y, STANDOFF_DIA)
             ei = ext.createInput(all_profiles(sk), FOP.JoinFeatureOperation)
+            ei.participantBodies = [body_holder['body']]
             ei.setDistanceExtent(False, vi(WALL + STANDOFF_HEIGHT))
             ext.add(ei)
 
@@ -167,6 +169,7 @@ def run(context):
             for (x, y) in rpi_pos:
                 add_circle(sk2, x, y, RPI_HOLE_DIA)
             ei2 = ext.createInput(all_profiles(sk2), FOP.CutFeatureOperation)
+            ei2.participantBodies = [body_holder['body']]
             ei2.setDistanceExtent(False, vi(WALL + STANDOFF_HEIGHT + 1))
             ext.add(ei2)
 
@@ -182,6 +185,7 @@ def run(context):
             for (x, y) in caster_pos:
                 add_circle(sk, x, y, CASTER_HOLE_DIA)
             ei = ext.createInput(all_profiles(sk), FOP.CutFeatureOperation)
+            ei.participantBodies = [body_holder['body']]
             ei.setDistanceExtent(False, vi(WALL + 1))
             ext.add(ei)
 
