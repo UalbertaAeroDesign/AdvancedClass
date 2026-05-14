@@ -1,0 +1,20 @@
+# Python dependencies for the UAlberta Aero Design Advanced Class repo.
+#
+# Install:
+#   python -m venv .venv
+#   source .venv/bin/activate          # macOS / Linux
+#   .venv\Scripts\activate             # Windows
+#   pip install -r requirements.txt
+#
+# Some packages are platform-specific — see comments. Install what you need
+# for your role (sim work vs. on-RPi vision vs. ground station).
+
+# ---- Core: MAVLink communication (everyone needs this) ----
+pymavlink>=2.4.40
+pyserial>=3.5
+
+# ---- Vision / detection (RPi + ground station for SITL tests) ----
+opencv-python>=4.8.0
+numpy>=1.24.0
+pupil-apriltags>=1.0.4.post11
+
