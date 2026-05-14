@@ -21,4 +21,8 @@ pupil-apriltags>=1.0.4.post11
 # ---- Optional: YOLO detection scripts ----
 # ultralytics>=8.0.0
 
+# ---- RPi-only (do NOT install on Mac/Windows) ----
+# picamera2 ships with Raspberry Pi OS. On a fresh RPi:
+#   sudo apt install python3-picamera2
+
 
