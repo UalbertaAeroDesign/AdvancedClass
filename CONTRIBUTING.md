@@ -118,8 +118,7 @@ python competition_2026/upload_mission.py --port /dev/ttyAMA0   # real hw
 
 - `main` is the working branch; commit small, working changes directly when
   it's just you in the repo
-- For larger features (new airframe support, mission overhauls), open a
-  **feature branch** named `feat/short-description`
+- For larger features, open a **feature branch** named `feat/short-description`
 - Keep commits focused — one logical change per commit
 - Commit messages: imperative mood, short subject line, optional body
   - Good: `add NAV_DELAY to release sequence`
